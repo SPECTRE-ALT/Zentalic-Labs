@@ -2,35 +2,38 @@ import { useState } from 'react'
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
-  const [sent, setSent] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.email || !formData.message || !formData.name) return
-    const form = e.target as HTMLFormElement
-    const btn = form.querySelector('button') as HTMLButtonElement
-    btn.disabled = true
-    btn.textContent = 'Sending...'
+    setStatus('loading')
 
     try {
-      const data = new FormData(form)
       const res = await fetch('https://formsubmit.co/ajax/zentaliclabs@gmail.com', {
         method: 'POST',
-        body: data
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          _subject: "New Contact Submission from Zentalic Labs Website",
+          _captcha: "false"
+        })
       })
       if (res.ok) {
-        setSent(true)
+        setStatus('success')
         setFormData({ name: '', email: '', message: '' })
       } else {
-        alert('Failed to send message.')
+        setStatus('error')
+        alert('Failed to send message. Please try again.')
       }
     } catch {
+      setStatus('error')
       alert('Network error. Please try again.')
-    } finally {
-      if (!sent) {
-        btn.disabled = false
-        btn.textContent = 'Send Message'
-      }
     }
   }
 
@@ -81,7 +84,7 @@ export default function Contact() {
         </div>
 
         <div className="contact-form-wrapper">
-          {sent ? (
+          {status === 'success' ? (
             <div className="contact-success">Message has been sent successfully</div>
           ) : (
             <form className="contact-form" onSubmit={handleSubmit}>
@@ -118,7 +121,9 @@ export default function Contact() {
                   required
                 ></textarea>
               </div>
-              <button type="submit" className="btn btn-primary">Send Message</button>
+              <button type="submit" disabled={status === 'loading'} className="btn btn-primary">
+                {status === 'loading' ? 'Sending...' : 'Send Message'}
+              </button>
             </form>
           )}
         </div>

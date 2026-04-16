@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
 
 const NAV_LINKS = [
   { label: 'Home', href: '/', isRoute: true },
@@ -10,34 +11,16 @@ const NAV_LINKS = [
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false)
-  const [isLight, setIsLight] = useState(false)
+  const { theme, toggleTheme } = useTheme()
+  const isLight = theme === 'light'
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll)
-    
-    const saved = localStorage.getItem('theme')
-    if (saved === 'light') {
-      setIsLight(true)
-      document.body.classList.add('light-mode')
-    }
-
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
-
-  const toggleTheme = () => {
-    const next = !isLight
-    setIsLight(next)
-    if (next) {
-      document.body.classList.add('light-mode')
-      localStorage.setItem('theme', 'light')
-    } else {
-      document.body.classList.remove('light-mode')
-      localStorage.setItem('theme', 'dark')
-    }
-  }
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, l: typeof NAV_LINKS[0]) => {
     e.preventDefault();

@@ -13,11 +13,15 @@ const ThemeContext = createContext<ThemeContextType>({
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const stored = localStorage.getItem('zentalic-theme')
-    return (stored === 'light' ? 'light' : 'dark')
+    return stored === 'light' ? 'light' : 'dark'
   })
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
+    if (theme === 'light') {
+      document.body.classList.add('light-mode')
+    } else {
+      document.body.classList.remove('light-mode')
+    }
     localStorage.setItem('zentalic-theme', theme)
   }, [theme])
 
